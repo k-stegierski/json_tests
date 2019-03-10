@@ -1,7 +1,10 @@
+import gherkin.deps.com.google.gson.JsonObject;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,7 +22,7 @@ public class Main {
     }
     @Test
     public void
-    TC_1highest_user_id() {
+    TC_1_highest_user_id() {
         Response response =
         when().
                 get("https://jsonplaceholder.typicode.com/posts/").
@@ -33,13 +36,8 @@ public class Main {
         {
             if(highest_userid<i)highest_userid=i;
         }
-        System.out.println(highest_userid);
-    }
-    @Test
-    public void
-    TC_2highest_id(){
 //        int num = new Random().nextInt(10);
-        Response response =
+        response =
                 when().
                         get("https://jsonplaceholder.typicode.com/posts?userId="+highest_userid).
                         then().
@@ -52,20 +50,22 @@ public class Main {
         {
             if(highest_id<i)highest_id=i;
         }
-        System.out.println(highest_userid + " "+ highest_id);
+        System.out.println("Highest userID: "+highest_userid + " Highest ID within userID: "+ highest_id);
 
-            RestAssured.baseURI = "https://jsonplaceholder.typicode.com";
-            given().urlEncodingEnabled(true)
-                    .contentType("application/json")
-                    .param("postId", highest_id)
-                    .param("id", 1)
-                    .param("name", "Karol")
-                    .param("email", "k@S.com")
-                    .param("body", "Fun Comment")
-                    .header("Accept", ContentType.JSON.getAcceptHeader())
-                    .post("/comments")
-                    .then().statusCode(200);
+        RestAssured.baseURI = "https://jsonplaceholder.typicode.com";
+        RequestSpecification httpRequest = RestAssured.given();
+        httpRequest.header("Content-Type", "application/json");
+        JsonObject post_request = new JsonObject();
+        post_request.addProperty("email", "test9@test.com");
+        post_request.addProperty("body", "laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo necessitatibus\ndolor quam autem quasi\nreiciendis et nam sapiente accusantium");
+        post_request.addProperty("name", "Karol");
+        post_request.addProperty("id", highest_id);
+        post_request.addProperty("postid", highest_userid);
+        httpRequest.body(post_request.toString());
+        response = httpRequest.post("/comments");
 
-
+        int statusCode = response.getStatusCode();
+        Assert.assertEquals(statusCode,201);
+        System.out.println("Status Code is: "+statusCode);
     }
 }
